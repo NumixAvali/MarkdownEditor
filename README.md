@@ -47,6 +47,7 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
 ✔ **State** – Different editor states (editing, read-only, collaborative).  
 ✔ **Chain of Responsibility** – Processing text through multiple filters (spell check, AI suggestions).  
 ✔ **Memento** – Auto-save and session recovery.
+✔ **Builder** – Modularity for the plugin system.
 
 ---
 
@@ -74,6 +75,7 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
   - [ ] **Observer** – Enable plugins to listen to editor events.
   - [ ] **Command** – Implement plugin actions as commands for undo/redo support.
   - [ ] **Mediator** – Handle communication between the core editor and plugins.
+  - [x] **Builder** - Chose which parameters to implement. 
 - **Tasks:**
   - Define a plugin interface (e.g., register(), execute()).
   - Implement a plugin manager to load, enable, and disable plugins dynamically.
@@ -110,7 +112,7 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
 ### **5. Advanced Features & Plugins**
 - **Description:** Additional features that enhance the editor’s functionality.
 - **Patterns Used:**
-  - [ ] **Prototype** – Allow cloning of complex document structures.
+  - [x] **Prototype** – Allow cloning of complex document structures.
   - [ ] **Chain of Responsibility** – Process text modifications through a chain (e.g., spell check, grammar check, AI suggestions).
   - [ ] **Visitor** – Implement operations on the Markdown AST (Abstract Syntax Tree) for custom processing.
 - **Possible Plugins:**

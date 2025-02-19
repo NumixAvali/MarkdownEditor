@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LR1", "LR1.csproj", "{7888F869-ACF4-4DA5-BCEC-2483F2DBAEA9}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IterativeEditor", "IterativeEditor.csproj", "{7888F869-ACF4-4DA5-BCEC-2483F2DBAEA9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
