@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 
 // Abstract Product - Markdown Element
 public abstract class MarkdownElement
@@ -91,35 +93,60 @@ public class ConsoleRenderStrategy : IRenderStrategy
     }
 }
 
-// Observer Pattern
+// Observer Pattern - Plugin Watcher
 public interface IObserver
 {
-    void Update();
+    void Update(string message);
 }
 
-public class MarkdownObserver : IObserver
+public class PluginObserver : IObserver
 {
-    public void Update()
+    public void Update(string message)
     {
-        Console.WriteLine("Markdown document has changed.");
+        Console.WriteLine($"Plugin Watcher: {message}");
     }
 }
 
-public class MarkdownSubject
+public class PluginWatcher
 {
-    private List<IObserver> observers = new List<IObserver>();
-    
+    private readonly List<IObserver> observers = new List<IObserver>();
+    private readonly string pluginDirectory;
+    private FileSystemWatcher fileWatcher;
+
+    public PluginWatcher(string pluginDirectory)
+    {
+        this.pluginDirectory = pluginDirectory;
+    }
+
     public void Attach(IObserver observer)
     {
         observers.Add(observer);
     }
-    
-    public void Notify()
+
+    public void Notify(string message)
     {
         foreach (var observer in observers)
         {
-            observer.Update();
+            observer.Update(message);
         }
+    }
+
+    public void StartWatching()
+    {
+        if (!Directory.Exists(pluginDirectory))
+        {
+            Directory.CreateDirectory(pluginDirectory);
+        }
+
+        fileWatcher = new FileSystemWatcher(pluginDirectory)
+        {
+            EnableRaisingEvents = true,
+            NotifyFilter = NotifyFilters.FileName | NotifyFilters.LastWrite
+        };
+
+        fileWatcher.Created += (sender, args) => Notify($"New plugin detected: {args.Name}");
+        fileWatcher.Changed += (sender, args) => Notify($"Plugin updated: {args.Name}");
+        fileWatcher.Deleted += (sender, args) => Notify($"Plugin removed: {args.Name}");
     }
 }
 
@@ -131,8 +158,8 @@ public interface ICommand
 
 public class RenderCommand : ICommand
 {
-    private IRenderStrategy renderStrategy;
-    private List<MarkdownElement> elements;
+    private readonly IRenderStrategy renderStrategy;
+    private readonly List<MarkdownElement> elements;
 
     public RenderCommand(IRenderStrategy renderStrategy, List<MarkdownElement> elements)
     {
@@ -170,15 +197,21 @@ class Program
             .Build();
         elements.AddRange(builtElements);
 
-        // Observer
-        MarkdownSubject subject = new MarkdownSubject();
-        MarkdownObserver observer = new MarkdownObserver();
-        subject.Attach(observer);
-        subject.Notify();
+        // Observer Pattern - Plugin Watcher
+        string pluginDir = "./plugins";
+        PluginWatcher pluginWatcher = new PluginWatcher(pluginDir);
+        PluginObserver observer = new PluginObserver();
+        pluginWatcher.Attach(observer);
+        pluginWatcher.StartWatching();
 
-        // Strategy and Command pattern Usage
+        Console.WriteLine("Watching for plugin changes in: " + pluginDir);
+
+        // Strategy Pattern and Command Pattern Usage
         IRenderStrategy renderStrategy = new ConsoleRenderStrategy();
         ICommand renderCommand = new RenderCommand(renderStrategy, elements);
         renderCommand.Execute();
+
+        // Keep the application running to observe plugin changes
+        while (true) Thread.Sleep(1000);
     }
 }
