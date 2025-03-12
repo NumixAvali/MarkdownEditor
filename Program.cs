@@ -74,13 +74,86 @@ public class MarkdownBuilder
     }
 }
 
+// Strategy Pattern
+public interface IRenderStrategy
+{
+    void Render(List<MarkdownElement> elements);
+}
+
+public class ConsoleRenderStrategy : IRenderStrategy
+{
+    public void Render(List<MarkdownElement> elements)
+    {
+        foreach (var element in elements)
+        {
+            Console.WriteLine(element.Render());
+        }
+    }
+}
+
+// Observer Pattern
+public interface IObserver
+{
+    void Update();
+}
+
+public class MarkdownObserver : IObserver
+{
+    public void Update()
+    {
+        Console.WriteLine("Markdown document has changed.");
+    }
+}
+
+public class MarkdownSubject
+{
+    private List<IObserver> observers = new List<IObserver>();
+    
+    public void Attach(IObserver observer)
+    {
+        observers.Add(observer);
+    }
+    
+    public void Notify()
+    {
+        foreach (var observer in observers)
+        {
+            observer.Update();
+        }
+    }
+}
+
+// Command Pattern
+public interface ICommand
+{
+    void Execute();
+}
+
+public class RenderCommand : ICommand
+{
+    private IRenderStrategy renderStrategy;
+    private List<MarkdownElement> elements;
+
+    public RenderCommand(IRenderStrategy renderStrategy, List<MarkdownElement> elements)
+    {
+        this.renderStrategy = renderStrategy;
+        this.elements = elements;
+    }
+
+    public void Execute()
+    {
+        renderStrategy.Render(elements);
+    }
+}
+
+// Client
 class Program
 {
     static void Main()
     {
         MarkdownProcessorFactory factory = new SimpleMarkdownProcessorFactory();
         List<MarkdownElement> elements = new List<MarkdownElement>();
-        
+
         // Create elements using Factory Method
         elements.Add(factory.GetBoldFactory().CreateElement());
         elements.Add(factory.GetItalicFactory().CreateElement());
@@ -97,10 +170,15 @@ class Program
             .Build();
         elements.AddRange(builtElements);
 
-        // Render elements
-        foreach (var element in elements)
-        {
-            Console.WriteLine(element.Render());
-        }
+        // Observer
+        MarkdownSubject subject = new MarkdownSubject();
+        MarkdownObserver observer = new MarkdownObserver();
+        subject.Attach(observer);
+        subject.Notify();
+
+        // Strategy and Command pattern Usage
+        IRenderStrategy renderStrategy = new ConsoleRenderStrategy();
+        ICommand renderCommand = new RenderCommand(renderStrategy, elements);
+        renderCommand.Execute();
     }
 }
