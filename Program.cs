@@ -7,7 +7,7 @@ using System.Threading;
 public abstract class MarkdownElement
 {
     public abstract string Render();
-    public abstract MarkdownElement Clone(); // Prototype
+    public abstract MarkdownElement Clone(); // Prototype Pattern
 }
 
 // Factory products
@@ -173,6 +173,65 @@ public class RenderCommand : ICommand
     }
 }
 
+// Macro Command Pattern
+public class MacroCommand : ICommand
+{
+    private readonly List<ICommand> commands = new List<ICommand>();
+
+    public void AddCommand(ICommand command)
+    {
+        commands.Add(command);
+    }
+
+    public void Execute()
+    {
+        foreach (var command in commands)
+        {
+            command.Execute();
+        }
+    }
+}
+
+// Template Method Pattern
+public abstract class MarkdownProcessor
+{
+    protected List<MarkdownElement> elements;
+    
+    public void Process()
+    {
+        elements = LoadMarkdown();
+        ParseMarkdown(elements);
+        RenderMarkdown(elements);
+    }
+
+    protected abstract List<MarkdownElement> LoadMarkdown();
+    protected abstract void ParseMarkdown(List<MarkdownElement> elements);
+    protected abstract void RenderMarkdown(List<MarkdownElement> elements);
+}
+
+public class SimpleMarkdownProcessor : MarkdownProcessor
+{
+    protected override List<MarkdownElement> LoadMarkdown()
+    {
+        Console.WriteLine("Loading Markdown...");
+        return new List<MarkdownElement> { new BoldText(), new ItalicText() };
+    }
+
+    protected override void ParseMarkdown(List<MarkdownElement> elements)
+    {
+        Console.WriteLine("Parsing Markdown...");
+    }
+
+    protected override void RenderMarkdown(List<MarkdownElement> elements)
+    {
+        Console.WriteLine("Rendering Markdown...");
+        foreach (var element in elements)
+        {
+            Console.WriteLine(element.Render());
+        }
+    }
+}
+
 // Client
 class Program
 {
@@ -209,7 +268,15 @@ class Program
         // Strategy Pattern and Command Pattern Usage
         IRenderStrategy renderStrategy = new ConsoleRenderStrategy();
         ICommand renderCommand = new RenderCommand(renderStrategy, elements);
-        renderCommand.Execute();
+
+        // Macro Command Usage
+        MacroCommand macroCommand = new MacroCommand();
+        macroCommand.AddCommand(renderCommand);
+        macroCommand.Execute();
+
+        // Template Method Usage
+        MarkdownProcessor processor = new SimpleMarkdownProcessor();
+        processor.Process();
 
         // Keep the application running to observe plugin changes
         while (true) Thread.Sleep(1000);
