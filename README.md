@@ -60,6 +60,8 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
   - [x] **Abstract Factory** – Provide an interface for creating UI components (editor, preview pane, toolbar).
   - [ ] **Proxy** – Manage access to the file system and remote storage.
   - [x] **Strategy** - Algorithm encapsulation for ease of maintenance.
+  - [ ] **Template Method** – Provide a standardized workflow for document processing, allowing subclasses to customize steps like parsing, formatting, and exporting.
+  - [ ] **Macro Commands** – Enable users to record and execute sequences of actions (e.g., applying formatting, inserting templates) as a single command.
 - **Tasks:**
   - Implement a text input area.
   - Implement a preview pane that updates as the user types.
@@ -77,6 +79,7 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
   - [x] **Command** – Implement plugin actions as commands for undo/redo support.
   - [ ] **Mediator** – Handle communication between the core editor and plugins.
   - [x] **Builder** - Chose which parameters to implement. 
+  - [ ] **Interpreter** – Provide a way to process and evaluate custom Markdown extensions or embedded commands (e.g., math expressions, custom syntax) within the document.
 - **Tasks:**
   - Define a plugin interface (e.g., register(), execute()).
   - Implement a plugin manager to load, enable, and disable plugins dynamically.
