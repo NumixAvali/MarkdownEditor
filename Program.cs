@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading;
@@ -8,6 +9,7 @@ public abstract class MarkdownElement
 {
     public abstract string Render();
     public abstract MarkdownElement Clone(); // Prototype Pattern
+    public bool Processed { get; set; } = false; // for Iterator pattern
 }
 
 // Factory products
@@ -57,19 +59,19 @@ public class SimpleMarkdownProcessorFactory : MarkdownProcessorFactory
 public class MarkdownBuilder
 {
     private List<MarkdownElement> elements = new List<MarkdownElement>();
-    
+
     public MarkdownBuilder AddBold()
     {
         elements.Add(new BoldText());
         return this;
     }
-    
+
     public MarkdownBuilder AddItalic()
     {
         elements.Add(new ItalicText());
         return this;
     }
-    
+
     public List<MarkdownElement> Build()
     {
         return elements;
@@ -196,7 +198,7 @@ public class MacroCommand : ICommand
 public abstract class MarkdownProcessor
 {
     protected List<MarkdownElement> elements;
-    
+
     public void Process()
     {
         elements = LoadMarkdown();
@@ -232,46 +234,140 @@ public class SimpleMarkdownProcessor : MarkdownProcessor
     }
 }
 
+// Iterator Pattern
+public class MarkdownIterator : IEnumerator<MarkdownElement>
+{
+    private readonly List<MarkdownElement> _elements;
+    private int _position = -1;
+
+    public MarkdownIterator(List<MarkdownElement> elements)
+    {
+        _elements = elements;
+    }
+
+    public MarkdownElement Current => _elements[_position];
+    object IEnumerator.Current => Current;
+
+    public bool MoveNext()
+    {
+        while (++_position < _elements.Count)
+        {
+            if (!_elements[_position].Processed)
+                return true;
+        }
+        return false;
+    }
+
+    public void Reset() => _position = -1;
+    public void Dispose() { }
+}
+
+// State Pattern
+public interface IEditorState
+{
+    void Handle();
+}
+
+public class ReadOnlyState : IEditorState
+{
+    public void Handle() => Console.WriteLine("Editor is in read-only mode. Editing is disabled.");
+}
+
+public class EditableState : IEditorState
+{
+    public void Handle() => Console.WriteLine("Editor is editable. Changes are allowed.");
+}
+
+public class EditorContext
+{
+    private IEditorState state;
+
+    public void SetState(IEditorState state)
+    {
+        this.state = state;
+    }
+
+    public void ApplyState()
+    {
+        state.Handle();
+    }
+}
+
+// Chain of Responsibility Pattern
+public abstract class TextHandler
+{
+    protected TextHandler next;
+
+    public void SetNext(TextHandler next)
+    {
+        this.next = next;
+    }
+
+    public virtual void Handle(ref string text)
+    {
+        next?.Handle(ref text);
+    }
+}
+
+public class TrimHandler : TextHandler
+{
+    public override void Handle(ref string text)
+    {
+        text = text.Trim();
+        base.Handle(ref text);
+    }
+}
+
+public class ReplaceTabsHandler : TextHandler
+{
+    public override void Handle(ref string text)
+    {
+        text = text.Replace("\t", "    ");
+        base.Handle(ref text);
+    }
+}
+
 // Client
 class Program
 {
     static void Main()
     {
-        MarkdownProcessorFactory factory = new SimpleMarkdownProcessorFactory();
-        List<MarkdownElement> elements = new List<MarkdownElement>();
-
-        // Create elements using Factory Method
-        elements.Add(factory.GetBoldFactory().CreateElement());
-        elements.Add(factory.GetItalicFactory().CreateElement());
-        
-        // Clone stuff via Prototype
-        MarkdownElement clonedElement = elements[0].Clone();
-        elements.Add(clonedElement);
-
-        // Bob the Builder
-        MarkdownBuilder builder = new MarkdownBuilder();
-        List<MarkdownElement> builtElements = builder
-            .AddBold()
-            .AddItalic()
-            .Build();
-        elements.AddRange(builtElements);
-
         // Observer Pattern - Plugin Watcher
         string pluginDir = "./plugins";
         PluginWatcher pluginWatcher = new PluginWatcher(pluginDir);
         PluginObserver observer = new PluginObserver();
         pluginWatcher.Attach(observer);
         pluginWatcher.StartWatching();
-
         Console.WriteLine("Watching for plugin changes in: " + pluginDir);
 
-        // Strategy Pattern and Command Pattern Usage
-        IRenderStrategy renderStrategy = new ConsoleRenderStrategy();
-        ICommand renderCommand = new RenderCommand(renderStrategy, elements);
+        // Iterator Pattern
+        List<MarkdownElement> elements = new List<MarkdownElement> { new BoldText(), new ItalicText() };
+        MarkdownIterator iterator = new MarkdownIterator(elements);
+        while (iterator.MoveNext())
+        {
+            var element = iterator.Current;
+            Console.WriteLine("Processing: " + element.Render());
+            element.Processed = true;
+        }
+
+        // State Pattern
+        EditorContext editor = new EditorContext();
+        editor.SetState(new ReadOnlyState());
+        editor.ApplyState();
+        editor.SetState(new EditableState());
+        editor.ApplyState();
+
+        // Chain of Responsibility Pattern
+        string rawText = "\t\t Some raw text with tabs.  ";
+        TextHandler trimHandler = new TrimHandler();
+        TextHandler tabHandler = new ReplaceTabsHandler();
+        trimHandler.SetNext(tabHandler);
+        trimHandler.Handle(ref rawText);
+        Console.WriteLine("Processed Text: " + rawText);
 
         // Macro Command Usage
         MacroCommand macroCommand = new MacroCommand();
-        macroCommand.AddCommand(renderCommand);
+        macroCommand.AddCommand(new RenderCommand(new ConsoleRenderStrategy(), elements));
         macroCommand.Execute();
 
         // Template Method Usage
