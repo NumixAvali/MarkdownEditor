@@ -91,7 +91,7 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
 - **Description:** The editor should be easy to use with an intuitive UI, including a menu, toolbar, and settings panel.
 - **Patterns Used:**
   - [x] **Abstract Factory** – Ensure consistency in UI elements like buttons, text fields, and menus.
-  - [ ] **State** – Handle different editor states (editing, read-only, full-screen).
+  - [x] **State** – Handle different editor states (editing, read-only, full-screen).
   - [ ] **Facade** – Provide a simplified interface for users to interact with complex features.
 - **Tasks:**
   - Create a toolbar with buttons for common Markdown elements.
@@ -117,7 +117,7 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
 - **Description:** Additional features that enhance the editor’s functionality.
 - **Patterns Used:**
   - [x] **Prototype** – Allow cloning of complex document structures.
-  - [ ] **Chain of Responsibility** – Process text modifications through a chain (e.g., spell check, grammar check, AI suggestions).
+  - [x] **Chain of Responsibility** – Process text modifications through a chain (e.g., spell check, grammar check, AI suggestions).
   - [ ] **Visitor** – Implement operations on the Markdown AST (Abstract Syntax Tree) for custom processing.
 - **Possible Plugins:**
   - Spell checker
@@ -131,7 +131,7 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
 - **Description:** Ensure the editor is stable, efficient, and user-friendly.
 - **Patterns Used:**
   - [ ] **Memento** – Implement auto-save and session recovery.
-  - [ ] **Iterator** – Support iteration over document elements for efficient processing.
+  - [x] **Iterator** – Support iteration over document elements for efficient processing.
 - **Tasks:**
   - Write unit tests for core functionality.
   - Optimize Markdown parsing for performance.
