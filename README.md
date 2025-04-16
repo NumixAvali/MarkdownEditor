@@ -46,8 +46,12 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
 ✔ **Command** – Undo/redo actions.  
 ✔ **State** – Different editor states (editing, read-only, collaborative).  
 ✔ **Chain of Responsibility** – Processing text through multiple filters (spell check, AI suggestions).  
-✔ **Memento** – Auto-save and session recovery.
-✔ **Builder** – Modularity for the plugin system.
+✔ **Memento** – Auto-save and session recovery.  
+✔ **Builder** – Modularity for the plugin system.  
+✔ **Template Method** – Provide a standardized workflow for document processing.  
+✔ **Macro Commands** – Enable users to record and execute sequences of actions.  
+✔ **Interpreter** – Provide a way to process and evaluate custom Markdown.  
+✔ **Mediator** – Handle communication between the core editor and plugins.
 
 ---
 
@@ -77,9 +81,9 @@ This project aims to develop a **flexible, extensible Markdown editor** in **C#*
   - [x] **Abstract Factory** – Allow plugins to create their own UI components.
   - [x] **Observer** – Enable plugins to listen to editor events.
   - [x] **Command** – Implement plugin actions as commands for undo/redo support.
-  - [ ] **Mediator** – Handle communication between the core editor and plugins.
+  - [x] **Mediator** – Handle communication between the core editor and plugins.
   - [x] **Builder** - Chose which parameters to implement. 
-  - [ ] **Interpreter** – Provide a way to process and evaluate custom Markdown extensions or embedded commands (e.g., math expressions, custom syntax) within the document.
+  - [x] **Interpreter** – Provide a way to process and evaluate custom Markdown extensions or embedded commands (e.g., math expressions, custom syntax) within the document.
 - **Tasks:**
   - Define a plugin interface (e.g., register(), execute()).
   - Implement a plugin manager to load, enable, and disable plugins dynamically.

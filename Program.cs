@@ -95,7 +95,7 @@ public class ConsoleRenderStrategy : IRenderStrategy
     }
 }
 
-// Observer Pattern - Plugin Watcher
+// Observer Pattern - Plugin Watcher (The Watcher) ((Scug))
 public interface IObserver
 {
     void Update(string message);
@@ -327,12 +327,85 @@ public class ReplaceTabsHandler : TextHandler
     }
 }
 
+// Interpreter Pattern
+public interface IMarkdownExpression
+{
+    string Interpret();
+}
+
+public class MathExpression : IMarkdownExpression
+{
+    private string _expression;
+    public MathExpression(string expression)
+    {
+        _expression = expression;
+    }
+
+    public string Interpret()
+    {
+        if (_expression == "2+2") return "4";
+        if (_expression == "10*3") return "30";
+        return "(math)" + _expression;
+    }
+}
+
+public class InterpretCommand : ICommand
+{
+    private string _input;
+
+    public InterpretCommand(string input)
+    {
+        _input = input;
+    }
+
+    public void Execute()
+    {
+        if (_input.StartsWith("::math "))
+        {
+            string expr = _input.Substring(7);
+            var math = new MathExpression(expr);
+            Console.WriteLine("Interpreted: " + math.Interpret());
+        }
+        else
+        {
+            Console.WriteLine("Unrecognized command: " + _input);
+        }
+    }
+}
+
+// Mediator Pattern
+public interface IMediator
+{
+    void Notify(object sender, string ev);
+}
+
+public class EditorMediator : IMediator
+{
+    public void Notify(object sender, string ev)
+    {
+        Console.WriteLine($"Mediator received notification: {ev} from {sender.GetType().Name}");
+    }
+}
+
+public class PluginComponent
+{
+    private readonly IMediator _mediator;
+    public PluginComponent(IMediator mediator)
+    {
+        _mediator = mediator;
+    }
+
+    public void Register()
+    {
+        _mediator.Notify(this, "Plugin Registered");
+    }
+}
+
 // Client
 class Program
 {
     static void Main()
     {
-        // Observer Pattern - Plugin Watcher
         string pluginDir = "./plugins";
         PluginWatcher pluginWatcher = new PluginWatcher(pluginDir);
         PluginObserver observer = new PluginObserver();
@@ -340,7 +413,6 @@ class Program
         pluginWatcher.StartWatching();
         Console.WriteLine("Watching for plugin changes in: " + pluginDir);
 
-        // Iterator Pattern
         List<MarkdownElement> elements = new List<MarkdownElement> { new BoldText(), new ItalicText() };
         MarkdownIterator iterator = new MarkdownIterator(elements);
         while (iterator.MoveNext())
@@ -350,14 +422,12 @@ class Program
             element.Processed = true;
         }
 
-        // State Pattern
         EditorContext editor = new EditorContext();
         editor.SetState(new ReadOnlyState());
         editor.ApplyState();
         editor.SetState(new EditableState());
         editor.ApplyState();
 
-        // Chain of Responsibility Pattern
         string rawText = "\t\t Some raw text with tabs.  ";
         TextHandler trimHandler = new TrimHandler();
         TextHandler tabHandler = new ReplaceTabsHandler();
@@ -365,16 +435,22 @@ class Program
         trimHandler.Handle(ref rawText);
         Console.WriteLine("Processed Text: " + rawText);
 
-        // Macro Command Usage
+        // Macro command + Interpreter usage
         MacroCommand macroCommand = new MacroCommand();
         macroCommand.AddCommand(new RenderCommand(new ConsoleRenderStrategy(), elements));
+        macroCommand.AddCommand(new InterpretCommand("::math 2+2"));
+        macroCommand.AddCommand(new InterpretCommand("::math 10*3"));
+        macroCommand.AddCommand(new InterpretCommand("::unknown test"));
         macroCommand.Execute();
 
-        // Template Method Usage
         MarkdownProcessor processor = new SimpleMarkdownProcessor();
         processor.Process();
 
-        // Keep the application running to observe plugin changes
+        // Mediator usage
+        EditorMediator mediator = new EditorMediator();
+        PluginComponent plugin = new PluginComponent(mediator);
+        plugin.Register();
+
         while (true) Thread.Sleep(1000);
     }
 }
